@@ -4,12 +4,15 @@
 
 set -e
 
+# Capture start time for runtime logging
+start_time=$(date +%s)
+
 if [ $# -lt 2 ]; then
     echo "Usage: $0 <input_dir> <output_file>"
     exit 1
 fi
 
-resolution="1920x1080"
+resolution="1920:1080"
 if [ $# -ge 3 ]; then
     resolution="$3"
 fi
@@ -99,4 +102,20 @@ ffmpeg -hide_banner -loglevel error -y -f concat -safe 0 -i "$list_file" -c copy
 fancy_echo "Step 6: Cleaning up temporary files..." 35
 rm -rf "$workdir"
 
+# Calculate and log runtime
+end_time=$(date +%s)
+runtime=$((end_time - start_time))
+hours=$((runtime / 3600))
+minutes=$(((runtime % 3600) / 60))
+seconds=$((runtime % 60))
+
+if [ $hours -gt 0 ]; then
+    runtime_str="${hours}h ${minutes}m ${seconds}s"
+elif [ $minutes -gt 0 ]; then
+    runtime_str="${minutes}m ${seconds}s"
+else
+    runtime_str="${seconds}s"
+fi
+
 fancy_echo "All done! Merged video saved as $output_file" 32
+fancy_echo "Total runtime: $runtime_str" 33
